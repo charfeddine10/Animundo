@@ -20,7 +20,10 @@ interface Anime {
 interface TrendingAnime {
   searchTerm: string;
   id: number;
-  title: string;
+  title: {
+    english:string,
+    roamaji:string
+  };
   count: number;
   coverImage: {
     large: string;

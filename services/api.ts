@@ -88,7 +88,7 @@ export const fetchAnime = async ({ query }: { query: string }) => {
     `
     : `
       query {
-        Page(page: 1, perPage: 20) {
+        Page(page: 1, perPage: 50) {
           media(type: ANIME, sort: TRENDING_DESC) {
             id
             title {

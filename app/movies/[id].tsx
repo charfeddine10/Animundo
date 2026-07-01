@@ -1,98 +1,199 @@
+// import { icons } from "@/constants/icons";
+// import { fetchAnimeDetails } from "@/services/api";
+// import useFetch from "@/services/useFetch";
+// import { useLocalSearchParams, useRouter } from "expo-router";
+// import React from "react";
+// import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+// interface MovieInfoProps {
+//   label: string;
+//   value?: string | number | null;
+// }
+
+// const MovieInfo = ({ label, value }: MovieInfoProps) => (
+//   <View className="flex-col items-start justify-center mt-5">
+//     <Text className="text-light-200 font-normal text-sm">{label}</Text>
+//     <Text className="text-light-100 font-bold text-sm mt-2">
+//       {value || "N/A"}
+//     </Text>
+//   </View>
+// );
+
+// const MovieDetails = () => {
+//   const router = useRouter();
+//   const { id } = useLocalSearchParams();
+//   const { data: anime, loading } = useFetch(() =>
+//     fetchAnimeDetails(id as string),
+//   );
+// console.log(anime ,'**********************************')
+//   return (
+//     <View className="bg-primary flex-1">
+//       <ScrollView
+//         contentContainerStyle={{
+//           paddingBottom: 80,
+//         }}
+//       >
+//         <View>
+//           <Image
+//             source={{
+//               uri: `hanime?.coverImage?.extraLargeh}`,
+//             }}
+//             className="w-full h-[550px]"
+//             resizeMode="stretch"
+//           />
+//         </View>
+
+//         <View className="flex-col items-start justify-center mt-5 px-5">
+//           <Text className="text-white font-bold text-xl">{anime?.title}</Text>
+//           <View className="flex-row items-center gap-x-1 mt-2">
+//             <Text className="text-light-200 text-sm">
+//               {movie?.release_date?.split("-")[0]} •
+//             </Text>
+//             <Text className="text-light-200 text-sm">{anime?.runtime}m</Text>
+//           </View>
+
+//           <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md gap-x-1 mt-2">
+//             <Image source={icons.star} className="size-4" />
+
+//             <Text className="text-white font-bold text-sm">
+//               {Math.round(anime?.vote_average ?? 0)}/10
+//             </Text>
+
+//             <Text className="text-light-200 text-sm">
+//               ({movie?.vote_count} votes)
+//             </Text>
+//           </View>
+
+//           <MovieInfo label="Overview" value={movie?.overview} />
+//           <MovieInfo
+//             label="Genres"
+//             value={movie?.genres?.map((g) => g.name).join(" • ") || "N/A"}
+//           />
+
+//           <View className="flex flex-row justify-between w-1/2">
+//             <MovieInfo
+//               label="Budget"
+//               value={`$${(movie?.budget ?? 0) / 1_000_000} million`}
+//             />
+//             <MovieInfo
+//               label="Revenue"
+//               value={`$${Math.round(
+//                 (movie?.revenue ?? 0) / 1_000_000,
+//               )} million`}
+//             />
+//           </View>
+
+//           <MovieInfo
+//             label="Production Companies"
+//             value={
+//               movie?.production_companies?.map((c) => c.name).join(" • ") ||
+//               "N/A"
+//             }
+//           />
+//         </View>
+//       </ScrollView>
+
+//       <TouchableOpacity
+//         className="absolute bottom-7 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
+//         onPress={router.back}
+//       >
+//         <Image
+//           source={icons.arrow}
+//           className="size-5 mr-1 mt-0.5 rotate-180"
+//           tintColor="#fff"
+//         />
+//         <Text className="text-white font-semibold text-base">Go Back</Text>
+//       </TouchableOpacity>
+//     </View>
+//   );
+// };
+
+// export default MovieDetails;
+
+
+
 import { icons } from "@/constants/icons";
-import { fetchMovieDetails } from "@/services/api";
+import { fetchAnimeDetails } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-interface MovieInfoProps {
-  label: string;
-  value?: string | number | null;
-}
-
-const MovieInfo = ({ label, value }: MovieInfoProps) => (
-  <View className="flex-col items-start justify-center mt-5">
-    <Text className="text-light-200 font-normal text-sm">{label}</Text>
-    <Text className="text-light-100 font-bold text-sm mt-2">
-      {value || "N/A"}
-    </Text>
-  </View>
-);
-
-const MovieDetails = () => {
+const AnimeDetails = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { data: movie, loading } = useFetch(() =>
-    fetchMovieDetails(id as string),
+
+  const { data: anime, loading } = useFetch(() =>
+    fetchAnimeDetails(Number(id))
   );
 
   return (
     <View className="bg-primary flex-1">
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: 80,
-        }}
-      >
+      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+        
+        {/* IMAGE */}
         <View>
           <Image
             source={{
-              uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
+              uri:
+                anime?.coverImage?.extraLarge ||
+                anime?.coverImage?.large,
             }}
             className="w-full h-[550px]"
-            resizeMode="stretch"
+            resizeMode="cover"
           />
         </View>
 
+        {/* CONTENT */}
         <View className="flex-col items-start justify-center mt-5 px-5">
-          <Text className="text-white font-bold text-xl">{movie?.title}</Text>
-          <View className="flex-row items-center gap-x-1 mt-2">
+          
+          {/* TITLE */}
+          <Text className="text-white font-bold text-xl">
+            {anime?.title?.english || anime?.title?.romaji}
+          </Text>
+
+          {/* YEAR + EPISODES */}
+          <View className="flex-row items-center gap-x-2 mt-2">
             <Text className="text-light-200 text-sm">
-              {movie?.release_date?.split("-")[0]} •
+              {anime?.startDate?.year || "?"}
             </Text>
-            <Text className="text-light-200 text-sm">{movie?.runtime}m</Text>
+            <Text className="text-light-200 text-sm">
+              • {anime?.episodes || "?"} episodes
+            </Text>
           </View>
 
-          <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md gap-x-1 mt-2">
-            <Image source={icons.star} className="size-4" />
-
+          {/* SCORE */}
+          <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md mt-3">
             <Text className="text-white font-bold text-sm">
-              {Math.round(movie?.vote_average ?? 0)}/10
-            </Text>
-
-            <Text className="text-light-200 text-sm">
-              ({movie?.vote_count} votes)
+              ⭐ {anime?.averageScore || "N/A"}/100
             </Text>
           </View>
 
-          <MovieInfo label="Overview" value={movie?.overview} />
-          <MovieInfo
-            label="Genres"
-            value={movie?.genres?.map((g) => g.name).join(" • ") || "N/A"}
-          />
-
-          <View className="flex flex-row justify-between w-1/2">
-            <MovieInfo
-              label="Budget"
-              value={`$${(movie?.budget ?? 0) / 1_000_000} million`}
-            />
-            <MovieInfo
-              label="Revenue"
-              value={`$${Math.round(
-                (movie?.revenue ?? 0) / 1_000_000,
-              )} million`}
-            />
+          {/* DESCRIPTION */}
+          <View className="mt-5">
+            <Text className="text-light-200 text-sm font-normal">
+              Overview
+            </Text>
+            <Text className="text-light-100 text-sm mt-2">
+              {anime?.description
+                ? anime.description.replace(/<[^>]*>/g, "")
+                : "N/A"}
+            </Text>
           </View>
 
-          <MovieInfo
-            label="Production Companies"
-            value={
-              movie?.production_companies?.map((c) => c.name).join(" • ") ||
-              "N/A"
-            }
-          />
+          {/* GENRES */}
+          <View className="mt-5">
+            <Text className="text-light-200 text-sm font-normal">
+              Genres
+            </Text>
+            <Text className="text-light-100 text-sm mt-2">
+              {anime?.genres?.join(" • ") || "N/A"}
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
+      {/* BACK BUTTON */}
       <TouchableOpacity
         className="absolute bottom-7 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
         onPress={router.back}
@@ -102,10 +203,12 @@ const MovieDetails = () => {
           className="size-5 mr-1 mt-0.5 rotate-180"
           tintColor="#fff"
         />
-        <Text className="text-white font-semibold text-base">Go Back</Text>
+        <Text className="text-white font-semibold text-base">
+          Go Back
+        </Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-export default MovieDetails;
+export default AnimeDetails;

@@ -66,7 +66,7 @@ export default function Index() {
                   className="mb-4 mt-3"
                   data={trendingAnime}
                   contentContainerStyle={{
-                    gap: 26,
+                    gap: 20,
                   }}
                   renderItem={({ item, index }) => {
                     console.log("🚀 ~ Index ~ item:", item);
