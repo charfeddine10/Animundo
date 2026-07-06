@@ -1,23 +1,37 @@
-import { icons } from "@/constants/icons";
-// import React from "react";
-// import { Image, Text, View } from "react-native";
-
-// const profile = () => {
-//   return (
-//     <View className="bg-primary flex-1 px-10">
-//       <View className="flex justify-center items-center flex-1 flex-col gap-5">
-//         <Image source={icons.person} className="size-10" tintColor="#FFF" />
-//         <Text className="text-gray-500 text-base">Profile</Text>
-//       </View>
-//     </View>
-//   );
-// };
-
-// export default profile;
 
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { icons } from "@/constants/icons";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { getCurrentUser } from "@/services/auth";
+import { getWatchlist } from "@/services/watchlist";
 
 export default function Profile() {
+
+  const [watchlistCount, setWatchlistCount] = useState(0);
+  const [shortId, setshortId] = useState("");
+  
+useFocusEffect(
+  useCallback(() => {
+    const loadProfile = async () => {
+      try {
+        const user = await getCurrentUser();
+
+        if (!user) return;
+
+        const watchlist = await getWatchlist(user.$id);
+
+        setshortId(user.$id.slice(0, 8));
+        setWatchlistCount(watchlist.length);
+      } catch (error) {
+        console.log("Error loading profile:", error);
+      }
+    };
+
+    loadProfile();
+  }, [])
+);
+  
   return (
     <View className="flex-1 bg-primary">
       <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
@@ -27,21 +41,25 @@ export default function Profile() {
           <Text className="text-white text-2xl font-bold mt-4">Anime Fan</Text>
 
           <Text className="text-gray-400 mt-1">Track your anime journey</Text>
+
+          <Text className="text-gray-400 mt-1">
+            User: {shortId || "Loading..."}
+          </Text>
         </View>
 
         <View className="flex-row justify-between mt-10">
           <View className="items-center flex-1">
-            <Text className="text-white text-xl font-bold">0</Text>
+            <Text className="text-white text-xl font-bold"> {watchlistCount}</Text>
             <Text className="text-gray-400">Watchlist</Text>
           </View>
 
           <View className="items-center flex-1">
-            <Text className="text-white text-xl font-bold">0</Text>
+            <Text className="text-white text-xl font-bold">--</Text>
             <Text className="text-gray-400">Completed</Text>
           </View>
 
           <View className="items-center flex-1">
-            <Text className="text-white text-xl font-bold">0</Text>
+            <Text className="text-white text-xl font-bold">--</Text>
             <Text className="text-gray-400">Favorites</Text>
           </View>
         </View>

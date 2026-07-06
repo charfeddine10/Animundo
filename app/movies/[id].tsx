@@ -116,10 +116,21 @@ import { icons } from "@/constants/icons";
 import { fetchAnimeDetails } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { getCurrentUser } from "@/services/auth";
+import {
+  addToWatchlist,
+  toggleWatchlist,
+  isInWatchlist,
+} from "@/services/watchlist";
 import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Image, ScrollView, Text, TouchableOpacity, View  , Alert} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AnimeDetails = () => {
+
+const insets = useSafeAreaInsets();
+
   const router = useRouter();
   const { id } = useLocalSearchParams();
 
@@ -127,9 +138,53 @@ const AnimeDetails = () => {
     fetchAnimeDetails(Number(id))
   );
 
+  const [saved, setSaved] = useState<boolean | null>(null);
+  const [loadingSave, setLoadingSave] = useState(false);  
+  const [checkingSaved, setCheckingSaved] = useState(true);
+
+
+
+useEffect(() => {
+  const check = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (!user || !anime) return;
+
+      const exists = await isInWatchlist(user.$id, anime.id);
+
+      setSaved(exists); // now we KNOW true/false
+    } catch (error) {
+      console.log(error);
+      setSaved(false);
+    }
+  };
+
+  check();
+}, [anime]);
+
+
+const handleToggle = async () => {
+  try {
+    if (!anime) return;
+
+    setLoadingSave(true);
+
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const result = await toggleWatchlist(user.$id, anime);
+
+    setSaved(result);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoadingSave(false);
+  }
+};
+
   return (
     <View className="bg-primary flex-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
         
         {/* IMAGE */}
         <View>
@@ -193,8 +248,34 @@ const AnimeDetails = () => {
         </View>
       </ScrollView>
 
+
+
+{/* LOADING STATE (only first render) */}
+{/* {saved === null ? (
+  <View className="absolute bottom-24 left-0 right-0 mx-5 bg-gray-600 rounded-lg py-3.5 items-center justify-center z-50">
+    <Text className="text-white">Loading...</Text>
+  </View>
+) : (
+  <TouchableOpacity
+    onPress={handleToggle}
+    disabled={loadingSave}
+    className={`absolute bottom-24 left-0 right-0 mx-5 rounded-lg py-3.5 flex-row items-center justify-center z-50 ${
+      saved ? "bg-red-600" : "bg-green-600"
+    }`}
+  >
+    <Text className="text-white font-semibold text-base">
+      {loadingSave
+        ? "Loading..."
+        : saved
+        ? "Remove from Watchlist"
+        : "Add to Watchlist"}
+    </Text>
+  </TouchableOpacity>
+)} */}
+
+
       {/* BACK BUTTON */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         className="absolute bottom-7 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
         onPress={router.back}
       >
@@ -206,7 +287,54 @@ const AnimeDetails = () => {
         <Text className="text-white font-semibold text-base">
           Go Back
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+<View
+  className="absolute left-0 right-0 mx-5 flex gap-3 z-50"
+  style={{
+    bottom: insets.bottom + 10,
+  }}
+>
+{/* SAVE BUTTON */}
+{saved === null ? (
+  <View className="bg-gray-600 rounded-lg py-3.5 items-center justify-center">
+    <Text className="text-white">Loading...</Text>
+  </View>
+) : (
+  <TouchableOpacity
+    onPress={handleToggle}
+    disabled={loadingSave}
+    className={`rounded-lg py-3.5 items-center justify-center ${
+      saved ? "bg-red-600" : "bg-green-600"
+    }`}
+  >
+    <Text className="text-white font-semibold text-base">
+      {loadingSave
+        ? "Loading..."
+        : saved
+        ? "Remove from Watchlist"
+        : "Add to Watchlist"}
+    </Text>
+  </TouchableOpacity>
+)}
+
+{/* BACK BUTTON */}
+<TouchableOpacity
+  className="bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center"
+  onPress={router.back}
+>
+  <Image
+    source={icons.arrow}
+    className="size-5 mr-1 mt-0.5 rotate-180"
+    tintColor="#fff"
+  />
+  <Text className="text-white font-semibold text-base">
+    Go Back
+  </Text>
+</TouchableOpacity>
+
+</View>
+
     </View>
   );
 };
