@@ -66,11 +66,17 @@
 
 export const ANILIST_API = "https://graphql.anilist.co";
 
-export const fetchAnime = async ({ query }: { query: string }) => {
+export const fetchAnime = async ({
+  query,
+  sort = "TRENDING_DESC",
+}: {
+  query: string;
+  sort?: string;
+}) => {
   const graphqlQuery = query
     ? `
       query ($search: String) {
-        Page(page: 1, perPage: 20) {
+        Page(page: 1, perPage: 15) {
           media(search: $search, type: ANIME) {
             id
             title {
@@ -88,8 +94,8 @@ export const fetchAnime = async ({ query }: { query: string }) => {
     `
     : `
       query {
-        Page(page: 1, perPage: 50) {
-          media(type: ANIME, sort: TRENDING_DESC) {
+        Page(page: 1, perPage: 10) {
+          media(type: ANIME, sort: ${sort}){
             id
             title {
               romaji
