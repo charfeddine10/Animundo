@@ -101,6 +101,7 @@ const Saved = () => {
             gap: 10,
             marginBottom: 10,
           }}
+           contentContainerStyle={{  paddingBottom: 120 , }}
           renderItem={({ item }) => (
             <View className="mr-2">
               <Image

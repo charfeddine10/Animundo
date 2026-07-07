@@ -124,7 +124,9 @@ export const getWatchlist = async (userId: string) => {
   const result = await database.listDocuments(
     DATABASE_ID,
     COLLECTION_ID,
-    [Query.equal("userId", userId)]
+    [Query.equal("userId", userId),
+     Query.orderDesc("$createdAt"), 
+    ]
   );
 
   return result.documents;

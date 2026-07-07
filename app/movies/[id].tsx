@@ -173,6 +173,7 @@ const handleToggle = async () => {
     if (!user) return;
 
     const result = await toggleWatchlist(user.$id, anime);
+    
 
     setSaved(result);
   } catch (error) {
