@@ -1,78 +1,47 @@
-// import { icons } from "@/constants/icons";
-// import React from "react";
-// import { Image, Text, View } from "react-native";
-
-// const Saved = () => {
-//   return (
-//     <View className="bg-primary flex-1 px-10">
-//       <View className="flex justify-center items-center flex-1 flex-col gap-5">
-//         <Image source={icons.save} className="size-10" tintColor="#FFF" />
-//         <Text className="text-gray-500 text-base">Save</Text>
-//       </View>
-//     </View>
-//   );
-// };
-
-// export default Saved;
-
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image } from "react-native";
+import { View, Text, FlatList, Image, TouchableOpacity } from "react-native";
 
-import { getWatchlist } from "@/services/watchlist";
+import { getWatchlist, getFavorites } from "@/services/watchlist";
 import { getCurrentUser } from "@/services/auth";
 
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { useRouter } from "expo-router";
 
 const Saved = () => {
+  const router = useRouter();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
-
-  // useEffect(() => {
-  //   const loadWatchlist = async () => {
-  //     try {
-  //       const user = await getCurrentUser();
-
-  //       if (!user) return;
-
-  //       const result = await getWatchlist(user.$id);
-
-  //       setData(result);
-  //     } catch (error) {
-  //       console.log("Error loading watchlist:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   loadWatchlist();
-  // }, []);
-
+  const [activeTab, setActiveTab] = useState<"watchlist" | "favorites">(
+    "watchlist",
+  );
 
   useFocusEffect(
-  useCallback(() => {
-    const loadWatchlist = async () => {
-      try {
+    useCallback(() => {
+      const loadWatchlist = async () => {
+        try {
+          setLoading(true);
+          const user = await getCurrentUser();
 
-         setLoading(true);
-        const user = await getCurrentUser();
+          if (!user) return;
 
-        if (!user) return;
+          const result =
+            activeTab === "watchlist"
+              ? await getWatchlist(user.$id)
+              : await getFavorites(user.$id);
 
-        const result = await getWatchlist(user.$id);
+          setData(result);
+          setData(result);
+        } catch (error) {
+          console.log("Error loading watchlist:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-        setData(result);
-      } catch (error) {
-        console.log("Error loading watchlist:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadWatchlist();
-  }, [])
-);
+      loadWatchlist();
+    }, [activeTab]),
+  );
 
   if (loading) {
     return (
@@ -84,13 +53,33 @@ const Saved = () => {
 
   return (
     <View className="flex-1 bg-primary px-5 pt-10">
-      <Text className="text-white text-xl font-bold mb-5">
-        My Watchlist
-      </Text>
+      <Text className="text-white text-xl font-bold mb-5">Saved</Text>
+
+      <View className="flex-row bg-dark-200 rounded-xl mb-5 p-1">
+        <TouchableOpacity
+          onPress={() => setActiveTab("watchlist")}
+          className={`flex-1 py-3 rounded-lg items-center ${
+            activeTab === "watchlist" ? "bg-accent" : ""
+          }`}
+        >
+          <Text className="text-white">Watchlist</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActiveTab("favorites")}
+          className={`flex-1 py-3 rounded-lg items-center ${
+            activeTab === "favorites" ? "bg-accent" : ""
+          }`}
+        >
+          <Text className="text-white">❤️ Favorites</Text>
+        </TouchableOpacity>
+      </View>
 
       {data.length === 0 ? (
         <Text className="text-gray-400">
-          No anime saved yet
+          {activeTab === "watchlist"
+            ? "Your watchlist is empty"
+            : "No favorites yet"}
         </Text>
       ) : (
         <FlatList
@@ -101,9 +90,12 @@ const Saved = () => {
             gap: 10,
             marginBottom: 10,
           }}
-           contentContainerStyle={{  paddingBottom: 120 , }}
+          contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => (
-            <View className="mr-2">
+            <TouchableOpacity
+              className="mr-2"
+              onPress={() => router.push(`/movies/${item.animeId}`)}
+            >
               <Image
                 source={{ uri: item.posterUrl }}
                 className="w-[100px] h-[150px] rounded-lg"
@@ -114,9 +106,9 @@ const Saved = () => {
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {item.title.substring(0,15) + '...'}
+                {item.title.substring(0, 15) + "..."}
               </Text>
-            </View>
+            </TouchableOpacity>
           )}
         />
       )}

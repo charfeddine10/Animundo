@@ -69,7 +69,6 @@ export default function Index() {
                     gap: 20,
                   }}
                   renderItem={({ item, index }) => {
-                    console.log("🚀 ~ Index ~ item:", item);
                     return <TrendingCard anime={item} index={index} />;
                   }}
                   keyExtractor={(item) => item.id.toString()}

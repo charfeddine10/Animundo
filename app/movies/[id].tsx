@@ -1,117 +1,3 @@
-// import { icons } from "@/constants/icons";
-// import { fetchAnimeDetails } from "@/services/api";
-// import useFetch from "@/services/useFetch";
-// import { useLocalSearchParams, useRouter } from "expo-router";
-// import React from "react";
-// import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-
-// interface MovieInfoProps {
-//   label: string;
-//   value?: string | number | null;
-// }
-
-// const MovieInfo = ({ label, value }: MovieInfoProps) => (
-//   <View className="flex-col items-start justify-center mt-5">
-//     <Text className="text-light-200 font-normal text-sm">{label}</Text>
-//     <Text className="text-light-100 font-bold text-sm mt-2">
-//       {value || "N/A"}
-//     </Text>
-//   </View>
-// );
-
-// const MovieDetails = () => {
-//   const router = useRouter();
-//   const { id } = useLocalSearchParams();
-//   const { data: anime, loading } = useFetch(() =>
-//     fetchAnimeDetails(id as string),
-//   );
-// console.log(anime ,'**********************************')
-//   return (
-//     <View className="bg-primary flex-1">
-//       <ScrollView
-//         contentContainerStyle={{
-//           paddingBottom: 80,
-//         }}
-//       >
-//         <View>
-//           <Image
-//             source={{
-//               uri: `hanime?.coverImage?.extraLargeh}`,
-//             }}
-//             className="w-full h-[550px]"
-//             resizeMode="stretch"
-//           />
-//         </View>
-
-//         <View className="flex-col items-start justify-center mt-5 px-5">
-//           <Text className="text-white font-bold text-xl">{anime?.title}</Text>
-//           <View className="flex-row items-center gap-x-1 mt-2">
-//             <Text className="text-light-200 text-sm">
-//               {movie?.release_date?.split("-")[0]} •
-//             </Text>
-//             <Text className="text-light-200 text-sm">{anime?.runtime}m</Text>
-//           </View>
-
-//           <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md gap-x-1 mt-2">
-//             <Image source={icons.star} className="size-4" />
-
-//             <Text className="text-white font-bold text-sm">
-//               {Math.round(anime?.vote_average ?? 0)}/10
-//             </Text>
-
-//             <Text className="text-light-200 text-sm">
-//               ({movie?.vote_count} votes)
-//             </Text>
-//           </View>
-
-//           <MovieInfo label="Overview" value={movie?.overview} />
-//           <MovieInfo
-//             label="Genres"
-//             value={movie?.genres?.map((g) => g.name).join(" • ") || "N/A"}
-//           />
-
-//           <View className="flex flex-row justify-between w-1/2">
-//             <MovieInfo
-//               label="Budget"
-//               value={`$${(movie?.budget ?? 0) / 1_000_000} million`}
-//             />
-//             <MovieInfo
-//               label="Revenue"
-//               value={`$${Math.round(
-//                 (movie?.revenue ?? 0) / 1_000_000,
-//               )} million`}
-//             />
-//           </View>
-
-//           <MovieInfo
-//             label="Production Companies"
-//             value={
-//               movie?.production_companies?.map((c) => c.name).join(" • ") ||
-//               "N/A"
-//             }
-//           />
-//         </View>
-//       </ScrollView>
-
-//       <TouchableOpacity
-//         className="absolute bottom-7 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
-//         onPress={router.back}
-//       >
-//         <Image
-//           source={icons.arrow}
-//           className="size-5 mr-1 mt-0.5 rotate-180"
-//           tintColor="#fff"
-//         />
-//         <Text className="text-white font-semibold text-base">Go Back</Text>
-//       </TouchableOpacity>
-//     </View>
-//   );
-// };
-
-// export default MovieDetails;
-
-
-
 import { icons } from "@/constants/icons";
 import { fetchAnimeDetails } from "@/services/api";
 import useFetch from "@/services/useFetch";
@@ -121,79 +7,106 @@ import {
   addToWatchlist,
   toggleWatchlist,
   isInWatchlist,
+  toggleFavorite,
+  isFavorite,
 } from "@/services/watchlist";
 import React from "react";
 import { useEffect, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View  , Alert} from "react-native";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AnimeDetails = () => {
-
-const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
   const router = useRouter();
   const { id } = useLocalSearchParams();
 
   const { data: anime, loading } = useFetch(() =>
-    fetchAnimeDetails(Number(id))
+    fetchAnimeDetails(Number(id)),
   );
 
   const [saved, setSaved] = useState<boolean | null>(null);
-  const [loadingSave, setLoadingSave] = useState(false);  
-  const [checkingSaved, setCheckingSaved] = useState(true);
+  const [loadingSave, setLoadingSave] = useState(false);
+  const [favorite, setFavorite] = useState<boolean | null>(null);
 
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (!user || !anime) return;
 
+        const exists = await isInWatchlist(user.$id, anime.id);
 
-useEffect(() => {
-  const check = async () => {
+        setSaved(exists); // now we KNOW true/false
+
+        const fav = await isFavorite(user.$id, anime.id);
+
+        setFavorite(fav);
+      } catch (error) {
+        console.log(error);
+        setSaved(false);
+      }
+    };
+
+    check();
+  }, [anime]);
+
+  const handleToggle = async () => {
     try {
+      if (!anime) return;
+
+      setLoadingSave(true);
+
       const user = await getCurrentUser();
-      if (!user || !anime) return;
+      if (!user) return;
 
-      const exists = await isInWatchlist(user.$id, anime.id);
+      const result = await toggleWatchlist(user.$id, anime);
 
-      setSaved(exists); // now we KNOW true/false
+      setSaved(result);
     } catch (error) {
       console.log(error);
-      setSaved(false);
+    } finally {
+      setLoadingSave(false);
     }
   };
+  const handleFavoriteToggle = async () => {
+    try {
+      if (!anime) return;
 
-  check();
-}, [anime]);
+      if (!saved) {
+        Alert.alert(
+          "Watchlist Required",
+          "Add this anime to your Watchlist before marking it as a favorite.",
+        );
+        return;
+      }
 
+      const user = await getCurrentUser();
+      if (!user) return;
 
-const handleToggle = async () => {
-  try {
-    if (!anime) return;
+      const result = await toggleFavorite(user.$id, anime.id);
 
-    setLoadingSave(true);
-
-    const user = await getCurrentUser();
-    if (!user) return;
-
-    const result = await toggleWatchlist(user.$id, anime);
-    
-
-    setSaved(result);
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoadingSave(false);
-  }
-};
+      setFavorite(result);
+    } catch (error) {
+      console.log("Favorite error:", error);
+    }
+  };
 
   return (
     <View className="bg-primary flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
-        
         {/* IMAGE */}
         <View>
           <Image
             source={{
-              uri:
-                anime?.coverImage?.extraLarge ||
-                anime?.coverImage?.large,
+              uri: anime?.coverImage?.extraLarge || anime?.coverImage?.large,
             }}
             className="w-full h-[550px]"
             resizeMode="cover"
@@ -202,7 +115,6 @@ const handleToggle = async () => {
 
         {/* CONTENT */}
         <View className="flex-col items-start justify-center mt-5 px-5">
-          
           {/* TITLE */}
           <Text className="text-white font-bold text-xl">
             {anime?.title?.english || anime?.title?.romaji}
@@ -227,9 +139,7 @@ const handleToggle = async () => {
 
           {/* DESCRIPTION */}
           <View className="mt-5">
-            <Text className="text-light-200 text-sm font-normal">
-              Overview
-            </Text>
+            <Text className="text-light-200 text-sm font-normal">Overview</Text>
             <Text className="text-light-100 text-sm mt-2">
               {anime?.description
                 ? anime.description.replace(/<[^>]*>/g, "")
@@ -239,9 +149,7 @@ const handleToggle = async () => {
 
           {/* GENRES */}
           <View className="mt-5">
-            <Text className="text-light-200 text-sm font-normal">
-              Genres
-            </Text>
+            <Text className="text-light-200 text-sm font-normal">Genres</Text>
             <Text className="text-light-100 text-sm mt-2">
               {anime?.genres?.join(" • ") || "N/A"}
             </Text>
@@ -249,93 +157,64 @@ const handleToggle = async () => {
         </View>
       </ScrollView>
 
-
-
-{/* LOADING STATE (only first render) */}
-{/* {saved === null ? (
-  <View className="absolute bottom-24 left-0 right-0 mx-5 bg-gray-600 rounded-lg py-3.5 items-center justify-center z-50">
-    <Text className="text-white">Loading...</Text>
-  </View>
-) : (
-  <TouchableOpacity
-    onPress={handleToggle}
-    disabled={loadingSave}
-    className={`absolute bottom-24 left-0 right-0 mx-5 rounded-lg py-3.5 flex-row items-center justify-center z-50 ${
-      saved ? "bg-red-600" : "bg-green-600"
-    }`}
-  >
-    <Text className="text-white font-semibold text-base">
-      {loadingSave
-        ? "Loading..."
-        : saved
-        ? "Remove from Watchlist"
-        : "Add to Watchlist"}
-    </Text>
-  </TouchableOpacity>
-)} */}
-
-
-      {/* BACK BUTTON */}
-      {/* <TouchableOpacity
-        className="absolute bottom-7 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
-        onPress={router.back}
+      <View
+        className="absolute left-0 right-0 mx-5 flex gap-3 z-50"
+        style={{
+          bottom: insets.bottom + 10,
+        }}
       >
-        <Image
-          source={icons.arrow}
-          className="size-5 mr-1 mt-0.5 rotate-180"
-          tintColor="#fff"
-        />
-        <Text className="text-white font-semibold text-base">
-          Go Back
-        </Text>
-      </TouchableOpacity> */}
+        <View className="flex-row items-center gap-3">
+          {/* FAVORITE BUTTON */}
+          <TouchableOpacity
+            disabled={favorite === null}
+            onPress={handleFavoriteToggle}
+            style={{
+              opacity: saved ? 1 : 0.5,
+            }}
+            className="rounded-lg h-14 w-14 items-center justify-center"
+          >
+            <Text className="text-4xl">
+              {favorite === null ? "..." : favorite ? "❤️" : "🤍"}
+            </Text>
+          </TouchableOpacity>
 
-<View
-  className="absolute left-0 right-0 mx-5 flex gap-3 z-50"
-  style={{
-    bottom: insets.bottom + 10,
-  }}
->
-{/* SAVE BUTTON */}
-{saved === null ? (
-  <View className="bg-gray-600 rounded-lg py-3.5 items-center justify-center">
-    <Text className="text-white">Loading...</Text>
-  </View>
-) : (
-  <TouchableOpacity
-    onPress={handleToggle}
-    disabled={loadingSave}
-    className={`rounded-lg py-3.5 items-center justify-center ${
-      saved ? "bg-red-600" : "bg-green-600"
-    }`}
-  >
-    <Text className="text-white font-semibold text-base">
-      {loadingSave
-        ? "Loading..."
-        : saved
-        ? "Remove from Watchlist"
-        : "Add to Watchlist"}
-    </Text>
-  </TouchableOpacity>
-)}
+          {/* SAVE BUTTON */}
+          {saved === null ? (
+            <View className="bg-gray-600 rounded-lg h-14 flex-1 items-center justify-center">
+              <Text className="text-white">Loading...</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={handleToggle}
+              disabled={loadingSave}
+              className={` flex-1 rounded-lg py-3.5 items-center justify-center ${
+                saved ? "bg-red-600" : "bg-green-600"
+              }`}
+            >
+              <Text className="text-white font-semibold text-base">
+                {loadingSave
+                  ? "Loading..."
+                  : saved
+                    ? "Remove from Watchlist"
+                    : "Add to Watchlist"}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-{/* BACK BUTTON */}
-<TouchableOpacity
-  className="bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center"
-  onPress={router.back}
->
-  <Image
-    source={icons.arrow}
-    className="size-5 mr-1 mt-0.5 rotate-180"
-    tintColor="#fff"
-  />
-  <Text className="text-white font-semibold text-base">
-    Go Back
-  </Text>
-</TouchableOpacity>
-
-</View>
-
+        {/* BACK BUTTON */}
+        <TouchableOpacity
+          className="bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center"
+          onPress={router.back}
+        >
+          <Image
+            source={icons.arrow}
+            className="size-5 mr-1 mt-0.5 rotate-180"
+            tintColor="#fff"
+          />
+          <Text className="text-white font-semibold text-base">Go Back</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
