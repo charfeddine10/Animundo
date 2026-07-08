@@ -1,11 +1,13 @@
 import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import TrendingCard from "@/components/TrendingCard";
+import FeaturedCard from "@/components/FeaturedCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchAnime } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { useRouter } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -17,6 +19,8 @@ import {
 
 export default function Index() {
   const router = useRouter();
+  const featuredRef = useRef<FlatList>(null);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
 
   const {
     data: latestAnime,
@@ -50,6 +54,44 @@ export default function Index() {
       sort: "SCORE_DESC",
     }),
   );
+
+  const { data: featuredAnime } = useFetch(() =>
+    fetchAnime({
+      query: "",
+      sort: "POPULARITY_DESC",
+    }),
+  );
+  const featuredData = useMemo(() => {
+    if (!featuredAnime) return [];
+
+    return [...featuredAnime.slice(0, 5), ...featuredAnime.slice(0, 5)];
+  }, [featuredAnime]);
+
+  useEffect(() => {
+    if (featuredData.length === 0) return;
+
+    const interval = setInterval(() => {
+      setFeaturedIndex((prev) => {
+        const next = prev + 1;
+
+        if (next < featuredData.length) {
+          featuredRef.current?.scrollToIndex({
+            index: next,
+            animated: true,
+          });
+        } else {
+          featuredRef.current?.scrollToIndex({
+            index: 0,
+            animated: false,
+          });
+        }
+
+        return next >= featuredData.length ? 0 : next;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [featuredData]);
 
   return (
     <View className="flex-1 bg-primary">
@@ -85,6 +127,25 @@ export default function Index() {
               placeholder="Search for anime"
             />
 
+            {featuredAnime && (
+              <View className="mt-8">
+                <Text className="text-lg text-white font-bold mb-3">
+                  🎬 Featured Anime
+                </Text>
+
+                <FlatList
+                  horizontal
+                  ref={featuredRef}
+                  snapToInterval={366}
+                  decelerationRate="fast"
+                  showsHorizontalScrollIndicator={false}
+                  data={featuredData}
+                  renderItem={({ item }) => <FeaturedCard anime={item} />}
+                  keyExtractor={(item, index) => `${item.id}-${index}`}
+                />
+              </View>
+            )}
+
             {/* TRENDING */}
             {trendingAnime && (
               <View className="mt-8">
@@ -116,7 +177,7 @@ export default function Index() {
                 showsHorizontalScrollIndicator={false}
                 data={latestAnime}
                 renderItem={({ item, index }) => (
-                  <TrendingCard anime={item} index={index} />
+                  <MovieCard {...item} horizontal />
                 )}
                 keyExtractor={(item) => item.id.toString()}
                 ItemSeparatorComponent={() => <View className="w-4" />}
@@ -135,7 +196,7 @@ export default function Index() {
                   showsHorizontalScrollIndicator={false}
                   data={topRatedAnime}
                   renderItem={({ item, index }) => (
-                    <TrendingCard anime={item} index={index} />
+                    <MovieCard {...item} horizontal />
                   )}
                   keyExtractor={(item) => item.id.toString()}
                   ItemSeparatorComponent={() => <View className="w-4" />}
