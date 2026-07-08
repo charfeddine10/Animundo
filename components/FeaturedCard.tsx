@@ -12,18 +12,21 @@ const FeaturedCard = ({ anime }: Props) => {
       <TouchableOpacity className="w-[350px] h-72 rounded-xl overflow-hidden mr-4">
         <Image
           source={{
-            uri: anime.coverImage?.large,
+            uri:
+              anime.bannerImage ||
+              anime.coverImage?.extraLarge ||
+              anime.coverImage?.large,
           }}
           className="absolute w-full h-full"
           resizeMode="cover"
         />
 
         {/* dark overlay */}
-        <View className="absolute inset-0 bg-black/40" />
+        <View className="absolute bottom-0 left-0 right-0 h-24 bg-black/5" />
 
         <View className="absolute bottom-5 left-5">
           <Text className="text-white text-2xl font-bold" numberOfLines={2}>
-            {anime.title?.english || anime.title?.romaji}
+            {anime.title?.english || anime.title?.roamaji}
           </Text>
 
           <View className="flex-row mt-2 gap-x-4">

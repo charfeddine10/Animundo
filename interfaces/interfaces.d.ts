@@ -1,6 +1,11 @@
 interface Anime {
+  episodes: string;
+  bannerImage: any;
   id: number;
-  title: string;
+  title: {
+    english: string;
+    roamaji: string;
+  };
   adult: boolean;
   backdrop_path: string;
   genre_ids: number[];
@@ -9,6 +14,7 @@ interface Anime {
   overview: string;
   popularity: number;
   coverImage: {
+    extraLarge: any;
     large: string;
   };
   release_date: string;
@@ -21,8 +27,8 @@ interface TrendingAnime {
   searchTerm: string;
   id: number;
   title: {
-    english:string,
-    roamaji:string
+    english: string;
+    romaji: string;
   };
   count: number;
   coverImage: {

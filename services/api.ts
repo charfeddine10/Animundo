@@ -101,9 +101,11 @@ export const fetchAnime = async ({
               romaji
               english
             }
-            coverImage {
+           coverImage {
               large
+              extraLarge
             }
+            bannerImage
             averageScore
             episodes
           }
@@ -164,4 +166,115 @@ export const fetchAnimeDetails = async (animeId: number) => {
   const json = await response.json();
 
   return json.data.Media;
+};
+
+export const fetchAiringAnime = async () => {
+  const query = `
+    query {
+      Page(page: 1, perPage: 10) {
+        airingSchedules(
+          sort: TIME
+          notYetAired: true
+        ) {
+          episode
+          airingAt
+
+          media {
+            id
+
+            title {
+              english
+              romaji
+            }
+
+            coverImage {
+              large
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(ANILIST_API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  const json = await response.json();
+
+  return json.data.Page.airingSchedules;
+};
+
+export const fetchAiringToday = async () => {
+  const now = new Date();
+
+  const startOfDay = Math.floor(
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0,
+    ).getTime() / 1000,
+  );
+
+  const endOfDay = Math.floor(
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+    ).getTime() / 1000,
+  );
+
+  const query = `
+    query {
+      Page(page: 1, perPage: 20) {
+        airingSchedules(
+          airingAt_greater: ${startOfDay}
+          airingAt_lesser: ${endOfDay}
+          sort: TIME
+        ) {
+          episode
+          airingAt
+
+          media {
+            id
+
+            title {
+              english
+              romaji
+            }
+
+            coverImage {
+              large
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(ANILIST_API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query,
+    }),
+  });
+
+  const json = await response.json();
+
+  return json.data.Page.airingSchedules;
 };

@@ -4,7 +4,7 @@ import TrendingCard from "@/components/TrendingCard";
 import FeaturedCard from "@/components/FeaturedCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import { fetchAnime } from "@/services/api";
+import { fetchAiringAnime, fetchAiringToday, fetchAnime } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -61,6 +61,11 @@ export default function Index() {
       sort: "POPULARITY_DESC",
     }),
   );
+
+  const { data: airingToday } = useFetch(() => fetchAiringToday());
+
+  const { data: airingAnime } = useFetch(fetchAiringAnime);
+
   const featuredData = useMemo(() => {
     if (!featuredAnime) return [];
 
@@ -145,6 +150,75 @@ export default function Index() {
                 />
               </View>
             )}
+
+            <View className="mt-6">
+              <Text className="text-lg text-white font-bold mb-3">
+                📅 Airing Today
+              </Text>
+
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={airingToday}
+                keyExtractor={(item) => item.media.id.toString()}
+                renderItem={({ item }) => (
+                  <View className="mr-4 w-32">
+                    <Image
+                      source={{
+                        uri: item.media.coverImage.large,
+                      }}
+                      className="w-32 h-44 rounded-lg"
+                    />
+
+                    <Text className="text-white text-xs mt-2" numberOfLines={1}>
+                      {item.media.title.english || item.media.title.romaji}
+                    </Text>
+
+                    <Text className="text-accent text-xs mt-1">
+                      Episode {item.episode}
+                    </Text>
+
+                    <Text className="text-gray-400 text-xs">
+                      {new Date(item.airingAt * 1000).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
+                )}
+              />
+            </View>
+
+            <View className="mt-6">
+              <Text className="text-lg text-white font-bold mb-3">
+                📺 Next Episodes
+              </Text>
+
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={airingAnime}
+                keyExtractor={(item) => item.media.id.toString()}
+                renderItem={({ item }) => (
+                  <View className="mr-4 w-32">
+                    <Image
+                      source={{
+                        uri: item.media.coverImage.large,
+                      }}
+                      className="w-32 h-44 rounded-lg"
+                    />
+
+                    <Text className="text-white text-xs mt-2" numberOfLines={1}>
+                      {item.media.title.english || item.media.title.romaji}
+                    </Text>
+
+                    <Text className="text-accent text-xs mt-1">
+                      Ep {item.episode}
+                    </Text>
+                  </View>
+                )}
+              />
+            </View>
 
             {/* TRENDING */}
             {trendingAnime && (
