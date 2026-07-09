@@ -1,12 +1,9 @@
 import MovieCard from "@/components/MovieCard";
-import SearchBar from "@/components/SearchBar";
 import TrendingCard from "@/components/TrendingCard";
 import FeaturedCard from "@/components/FeaturedCard";
-import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchAiringAnime, fetchAiringToday, fetchAnime } from "@/services/api";
 import useFetch from "@/services/useFetch";
-import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,9 +13,9 @@ import {
   Text,
   View,
 } from "react-native";
+import Header from "@/components/Header";
 
 export default function Index() {
-  const router = useRouter();
   const featuredRef = useRef<FlatList>(null);
   const [featuredIndex, setFeaturedIndex] = useState(0);
 
@@ -101,7 +98,7 @@ export default function Index() {
   return (
     <View className="flex-1 bg-primary">
       <Image source={images.bg} className="absolute w-full z-0" />
-
+      <Header />
       <ScrollView
         className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
@@ -109,8 +106,6 @@ export default function Index() {
           paddingBottom: 120,
         }}
       >
-        <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
-
         {latestLoading || trendingLoading || topRatedLoading ? (
           <ActivityIndicator
             size="large"
@@ -126,12 +121,6 @@ export default function Index() {
           </Text>
         ) : (
           <View className="flex-1 mt-5">
-            {/* SEARCH */}
-            <SearchBar
-              onPress={() => router.push("/search")}
-              placeholder="Search for anime"
-            />
-
             {featuredAnime && (
               <View className="mt-8">
                 <Text className="text-lg text-white font-bold mb-3">
