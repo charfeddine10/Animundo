@@ -84,7 +84,8 @@ export const fetchAnime = async ({
               english
             }
             coverImage {
-              large
+               large
+               extraLarge
             }
             averageScore
             episodes
@@ -126,6 +127,11 @@ export const fetchAnime = async ({
   });
 
   const json = await response.json();
+
+  if (!json?.data?.Page?.media) {
+    console.log("ANILIST ERROR:", json);
+    return [];
+  }
 
   return json.data.Page.media;
 };
@@ -277,4 +283,36 @@ export const fetchAiringToday = async () => {
   const json = await response.json();
 
   return json.data.Page.airingSchedules;
+};
+
+export const fetchAnimeImage = async (search: string) => {
+  const query = `
+    query ($search: String) {
+      Page(page: 1, perPage: 1) {
+        media(search: $search, type: ANIME) {
+          coverImage {
+            extraLarge
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(ANILIST_API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      variables: {
+        search,
+      },
+    }),
+  });
+
+  const json = await response.json();
+
+  return json.data?.Page?.media?.[0]?.coverImage?.extraLarge;
 };

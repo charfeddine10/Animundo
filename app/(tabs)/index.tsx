@@ -1,8 +1,16 @@
 import MovieCard from "@/components/MovieCard";
 import TrendingCard from "@/components/TrendingCard";
 import FeaturedCard from "@/components/FeaturedCard";
+import NewsCard from "@/components/NewsCard";
 import { images } from "@/constants/images";
-import { fetchAiringAnime, fetchAiringToday, fetchAnime } from "@/services/api";
+import {
+  fetchAiringAnime,
+  fetchAiringToday,
+  fetchAnime,
+  fetchAnimeImage,
+} from "@/services/api";
+import { fetchAnimeNews } from "@/services/news";
+import { enrichNewsWithImages } from "@/services/newsUtils";
 import useFetch from "@/services/useFetch";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -63,6 +71,12 @@ export default function Index() {
 
   const { data: airingAnime } = useFetch(fetchAiringAnime);
 
+  const { data: news, loading: newsLoading } = useFetch(async () => {
+    const articles = await fetchAnimeNews();
+
+    return enrichNewsWithImages(articles.slice(0, 10));
+  });
+
   const featuredData = useMemo(() => {
     if (!featuredAnime) return [];
 
@@ -94,6 +108,12 @@ export default function Index() {
 
     return () => clearInterval(interval);
   }, [featuredData]);
+
+  useEffect(() => {
+    fetchAnimeImage("Solo Leveling").then((image) => {
+      console.log("ANI IMAGE:", image);
+    });
+  }, []);
 
   return (
     <View className="flex-1 bg-primary">
@@ -263,6 +283,26 @@ export default function Index() {
                   )}
                   keyExtractor={(item) => item.id.toString()}
                   ItemSeparatorComponent={() => <View className="w-4" />}
+                />
+              </View>
+            )}
+            {/* NEWS */}
+
+            {news && news.length > 0 && (
+              <View className="mt-8">
+                <View className="flex-row justify-between items-center mb-3">
+                  <Text className="text-lg text-white font-bold">
+                    📰 Latest News
+                  </Text>
+
+                  <Text className="text-white text-sm">See all</Text>
+                </View>
+
+                <FlatList
+                  data={news.slice(0, 3)}
+                  scrollEnabled={false}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => <NewsCard article={item} />}
                 />
               </View>
             )}
