@@ -10,6 +10,7 @@ import {
   toggleFavorite,
   isFavorite,
 } from "@/services/watchlist";
+import { fetchRecommendations } from "@/services/recommendations";
 import React from "react";
 import { useEffect, useState } from "react";
 import {
@@ -32,9 +33,12 @@ const AnimeDetails = () => {
     fetchAnimeDetails(Number(id)),
   );
 
+  const animeId = Number(id);
+
   const [saved, setSaved] = useState<boolean | null>(null);
   const [loadingSave, setLoadingSave] = useState(false);
   const [favorite, setFavorite] = useState<boolean | null>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   useEffect(() => {
     const check = async () => {
@@ -99,6 +103,22 @@ const AnimeDetails = () => {
     }
   };
 
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      try {
+        if (!animeId) return;
+
+        const data = await fetchRecommendations(animeId);
+
+        setRecommendations(data);
+      } catch (error) {
+        console.log("Recommendation error:", error);
+      }
+    };
+
+    loadRecommendations();
+  }, [animeId]);
+
   return (
     <View className="bg-primary flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
@@ -154,6 +174,49 @@ const AnimeDetails = () => {
               {anime?.genres?.join(" • ") || "N/A"}
             </Text>
           </View>
+          {/* RECOMMENDATIONS */}
+          {recommendations.length > 0 && (
+            <View className="mt-8">
+              <Text className="text-white font-bold text-xl mb-4">
+                You may also like
+              </Text>
+
+              {recommendations.slice(0, 5).map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={{ width: 400 }}
+                  className="flex-row mb-5"
+                  onPress={() => router.push(`/movies/${item.id}`)}
+                >
+                  <Image
+                    source={{
+                      uri: item.coverImage.large,
+                    }}
+                    className="w-20 h-28 rounded-lg"
+                    resizeMode="cover"
+                  />
+
+                  <View className="ml-3 flex-1 justify-center">
+                    <Text
+                      className="text-white font-bold text-base"
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {item.title.english || item.title.romaji}
+                    </Text>
+
+                    <Text className="text-light-200 mt-2">
+                      ⭐ {item.averageScore || "N/A"}/100
+                    </Text>
+
+                    <Text className="text-light-200 mt-1">
+                      {item.episodes || "?"} episodes
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 

@@ -1,7 +1,8 @@
-import MovieCard from "@/components/MovieCard";
+import MovieCard from "@/components/AnimeCard";
 import TrendingCard from "@/components/TrendingCard";
 import FeaturedCard from "@/components/FeaturedCard";
 import NewsCard from "@/components/NewsCard";
+import AiringCard from "@/components/AiringCard";
 import { images } from "@/constants/images";
 import {
   fetchAiringAnime,
@@ -173,29 +174,7 @@ export default function Index() {
                 data={airingToday}
                 keyExtractor={(item) => item.media.id.toString()}
                 renderItem={({ item }) => (
-                  <View className="mr-4 w-32">
-                    <Image
-                      source={{
-                        uri: item.media.coverImage.large,
-                      }}
-                      className="w-32 h-44 rounded-lg"
-                    />
-
-                    <Text className="text-white text-xs mt-2" numberOfLines={1}>
-                      {item.media.title.english || item.media.title.romaji}
-                    </Text>
-
-                    <Text className="text-accent text-xs mt-1">
-                      Episode {item.episode}
-                    </Text>
-
-                    <Text className="text-gray-400 text-xs">
-                      {new Date(item.airingAt * 1000).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </Text>
-                  </View>
+                  <AiringCard anime={item} showTime={true} />
                 )}
               />
             </View>
@@ -211,22 +190,7 @@ export default function Index() {
                 data={airingAnime}
                 keyExtractor={(item) => item.media.id.toString()}
                 renderItem={({ item }) => (
-                  <View className="mr-4 w-32">
-                    <Image
-                      source={{
-                        uri: item.media.coverImage.large,
-                      }}
-                      className="w-32 h-44 rounded-lg"
-                    />
-
-                    <Text className="text-white text-xs mt-2" numberOfLines={1}>
-                      {item.media.title.english || item.media.title.romaji}
-                    </Text>
-
-                    <Text className="text-accent text-xs mt-1">
-                      Ep {item.episode}
-                    </Text>
-                  </View>
+                  <AiringCard anime={item} showTime={false} showDay={true} />
                 )}
               />
             </View>

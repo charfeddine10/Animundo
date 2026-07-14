@@ -21,8 +21,8 @@ export default function RootLayout() {
 
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="movie/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="movie/search" options={{ headerShown: false }} />
+        <Stack.Screen name="anime/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="anime/search" options={{ headerShown: false }} />
       </Stack>
     </>
   );

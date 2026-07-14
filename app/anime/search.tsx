@@ -9,7 +9,7 @@ import useFetch from "@/services/useFetch";
 
 // import AnimeCard from "@/components/AnimeCard";
 
-import MovieCard from "@/components/MovieCard";
+import MovieCard from "@/components/AnimeCard";
 import SearchBar from "@/components/SearchBar";
 
 const Search = () => {
