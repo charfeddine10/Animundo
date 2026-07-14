@@ -48,7 +48,10 @@ const Header = () => {
       </Animated.View>
 
       {/* Search */}
-      <TouchableOpacity className="p-2" onPress={() => router.push("/search")}>
+      <TouchableOpacity
+        className="p-2"
+        onPress={() => router.push("movies/search")}
+      >
         <Ionicons name="search" size={26} color="white" />
       </TouchableOpacity>
     </View>

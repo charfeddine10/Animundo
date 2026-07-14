@@ -19,9 +19,11 @@ import {
   Image,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import Header from "@/components/Header";
+import { router } from "expo-router";
 
 export default function Index() {
   const featuredRef = useRef<FlatList>(null);
@@ -295,7 +297,9 @@ export default function Index() {
                     📰 Latest News
                   </Text>
 
-                  <Text className="text-white text-sm">See all</Text>
+                  <TouchableOpacity onPress={() => router.push("/news")}>
+                    <Text className="text-white text-sm">See all</Text>
+                  </TouchableOpacity>
                 </View>
 
                 <FlatList

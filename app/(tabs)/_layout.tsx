@@ -9,7 +9,7 @@ function TabIcon({ focused, icon, title }: any) {
       <Image
         source={icon}
         tintColor={focused ? "#FFB000" : "#A8B5DB"}
-        className="size-6"
+        className="size-5"
       />
 
       <Text
@@ -55,10 +55,12 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="search"
+        name="news"
         options={{
+          title: "News",
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon={icons.search} title="Search" />
+            <TabIcon focused={focused} icon={icons.play} title="News" />
           ),
         }}
       />
