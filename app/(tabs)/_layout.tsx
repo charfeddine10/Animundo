@@ -9,7 +9,11 @@ function TabIcon({ focused, icon, title }: any) {
       <Image
         source={icon}
         tintColor={focused ? "#FFB000" : "#A8B5DB"}
-        className="size-5"
+        style={{
+          width: 18,
+          height: 18,
+          resizeMode: "contain",
+        }}
       />
 
       <Text
